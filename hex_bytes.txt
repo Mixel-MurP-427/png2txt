@@ -1,0 +1,22 @@
+PNG file signature
+    89 50 4e 47 0d 0a 1a 0a
+
+IHDR chunk
+chunk length
+    00 00 00 0d
+chunk type
+    49 48 44 52
+data field ('0d' bytes long)
+    00 00 00 08 00 00 00 08 08 06 00 00 00 c4
+CRC
+    0f be 8b 00
+
+next chunk (IDAT)
+00 00 51 49 44 41 54 78 01 7c 8f 51 0e c0
+    20 08 43 1f 5c dc dd 9c 95 2e f3 c3 a8 84 92 17
+    0b a8 09 54 ab 66 20 92 94 25 75 83 fc 73 a6 c7
+    db 8f 00 0b 10 7e 25 f0 86 50 57 f8 26 58 39 db
+    a8 9e 50 d9 71 72 30 fe f3 ac 47 df 18 5a 31 60
+    c7 7e 03 97 78 01 00 00 ff ff 89 c5 35 51 00 00
+    00 06 49 44 41 54 03 00 ab ab 36 f9 b4 58 9c 26
+    00 00 00 00 49 45 4e 44 ae 42 60 82
