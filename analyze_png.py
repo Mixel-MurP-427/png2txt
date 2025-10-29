@@ -1,9 +1,34 @@
 #use `hex()` to convert to hexadecimal and `chr()` to convert to ascii
 #for the markdown, prefix the code sections with 'd', 'b', 'h', or 'a'
-#TODO add image at bottom of md file
 
 def hex_print(dec_bytes):
     return ' '.join(hex(byte)[2:] for byte in dec_bytes)
+
+def organize_bytes(filepath):
+    with open(filepath, 'rb') as myFile:
+        file_bytes = myFile.read()
+    if file_bytes[:8] != b'\x89PNG\r\n\x1a\n':
+        raise ValueError('filepath must be to a png file.')
+    
+    chunks = []
+    byte_index = 8
+    #find all chunks
+    while byte_index < len(file_bytes):
+        #create new dictionary for new chunk
+        chunks.append({})
+        #get chunk length and type
+        chunks[-1]['length'] = file_bytes[byte_index:byte_index+4]
+        chunks[-1]['type'] = file_bytes[byte_index+4:byte_index+8]
+        byte_index += 8
+        #get chunk data
+        chunks[-1]['data'] = file_bytes[byte_index : byte_index + int.from_bytes(chunks[-1]['length'])]
+        byte_index += int.from_bytes(chunks[-1]['length'])
+        #get chunk CRC
+        chunks[-1]['CRC'] = file_bytes[byte_index:byte_index+4]
+        byte_index += 4
+    
+    return chunks
+
 
 def write_analysis(filepath):
 
@@ -11,7 +36,7 @@ def write_analysis(filepath):
         file_bytes = myFile.read()
 
     int_bytes = tuple(byte for byte in file_bytes) #list of decimal integer values for each byte in the file
-    str_bytes = tuple(str(byte) for byte in int_bytes)
+    str_bytes = tuple(str(byte) for byte in int_bytes) #TODO check if uses of this actually get the math right
     byte_index = 0
     chunk_index = 0
 
@@ -51,7 +76,7 @@ def write_analysis(filepath):
             #chunk data
             data = hex_print(int_bytes[byte_index:byte_index + dec_len])
             byte_index += dec_len
-            md_output.write(f'- **Chunk data:** *h* `{data}`\n')
+            md_output.write(f'- **Chunk data:**  \n*h* `{data}`\n')
 
             #chunk CRC checksum
             crc = hex_print(int_bytes[byte_index:byte_index + 4])
@@ -62,4 +87,5 @@ def write_analysis(filepath):
         md_output.write(f'## The PNG image:\n![the png image]({filepath})')
 
 
-write_analysis('8x8.png')
+#write_analysis('8x8.png')
+print(organize_bytes('8x8.png'))
