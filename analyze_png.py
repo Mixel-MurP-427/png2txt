@@ -1,13 +1,37 @@
 #use `hex()` to convert to hexadecimal and `chr()` to convert to ascii
 #for the markdown, prefix the code sections with 'd', 'b', 'h', or 'a'
 
-def hex_print(dec_bytes):
-    return ' '.join(hex(byte)[2:] for byte in dec_bytes)
+file_header = b'\x89PNG\r\n\x1a\n'
+asciiLetterRange = set(range(65, 91)) | set(range(97, 123))
 
+
+# We got some nice type conversions here :-)
+def hex_print(hpBytes):
+    if type(hpBytes) != bytes:
+        raise TypeError(f'hex_print() argument must be bytes, not "{type(hpBytes)}".')
+    return ' '.join(hex(byte)[2:] for byte in hpBytes)
+
+def dec_print(dpBytes):
+    if type(dpBytes) != bytes:
+        raise TypeError(f'dec_print() argument must be bytes, not "{type(dpBytes)}".')
+    return ' '.join(str(int(byte)) for byte in dpBytes)
+
+def ascii_print(apBytes):
+    if type(apBytes) != bytes:
+        raise TypeError(f'ascii_print() argument must be bytes, not "{type(apBytes)}".')
+    output = []
+    for byte in apBytes:
+        if not byte in asciiLetterRange:
+            raise ValueError(f'The numeric byte value "{byte}" is not a letter A-Z or a-z in ascii.')
+        output.append(chr(byte))
+    return ''.join(output)
+
+
+# Sorts the bytes inside a PNG file into chunks, and sorts chunks into length, type, data, and CRC sections.
 def organize_bytes(filepath):
     with open(filepath, 'rb') as myFile:
         file_bytes = myFile.read()
-    if file_bytes[:8] != b'\x89PNG\r\n\x1a\n':
+    if file_bytes[:8] != file_header:
         raise ValueError('filepath must be to a png file.')
     
     chunks = []
@@ -30,62 +54,36 @@ def organize_bytes(filepath):
     return chunks
 
 
-def write_analysis(filepath):
+def write_analysis(imagepath):
 
-    with open(filepath, 'rb') as myFile:
-        file_bytes = myFile.read()
-
-    int_bytes = tuple(byte for byte in file_bytes) #list of decimal integer values for each byte in the file
-    str_bytes = tuple(str(byte) for byte in int_bytes) #TODO check if uses of this actually get the math right
-    byte_index = 0
-    chunk_index = 0
+    chunks = organize_bytes(imagepath)
 
     #begin writing to the markdown file
     with open('png_bytes_analysis.md', 'w') as md_output:
 
         #PNG file header
-        md_output.write(f'### PNG file signature\n- Decimal: `{" ".join(str_bytes[:8])}`\n')
-        string_soon = []
-        for byte in int_bytes[:8]:
-            if byte in range(32, 127):
-                string_soon.append(chr(byte))
-            else:
-                string_soon.append(hex(byte))
-        md_output.write(f'- Ascii/hex: `{" ".join(string_soon)}`\n')
-        byte_index += 8
+        md_output.write('### PNG file signature\n- Decimal: `137 80 78 71 13 10 26 10`\n- Ascii/hex: `0x89 P N G 0xd 0xa 0x1a 0xa`\n')
 
         #go through all chunks
-        while byte_index < len(int_bytes):
-            chunk_index += 1
-            md_output.write(f'### Chunk {chunk_index}\n')
+        for i, chunk in enumerate(chunks):
+            md_output.write(f'### Chunk {i+1}\n')
 
             #chunk length
-            hex_len = hex_print(int_bytes[byte_index:byte_index+4])
-            dec_len = int(''.join(str_bytes[byte_index:byte_index+4]))
-            byte_index += 4
-            md_output.write(f'- **Chunk length:** *h* `{hex_len}`, or {dec_len} bytes.\n')
+            md_output.write(f'- **Chunk length:** *h* `{hex_print(chunk['length'])}`, or {int.from_bytes(chunk['length'])} bytes.\n')
 
             #chunk type
-            try: #TODO remove this try thing
-                name = ''.join(chr(byte) for byte in int_bytes[byte_index:byte_index+4])
-                byte_index += 4
-                md_output.write(f'- **Chunk type:** *a* `{name}`\n')
-            except UnicodeEncodeError:
-                print('this ain\'t a chunk title!')
+            md_output.write(f'- **Chunk type:** *a* `{ascii_print(chunk['type'])}`\n')
+            
 
             #chunk data
-            data = hex_print(int_bytes[byte_index:byte_index + dec_len])
-            byte_index += dec_len
-            md_output.write(f'- **Chunk data:**  \n*h* `{data}`\n')
+            md_output.write(f'- **Chunk data:**  \n*h* `{hex_print(chunk['data'])}`\n')
 
             #chunk CRC checksum
-            crc = hex_print(int_bytes[byte_index:byte_index + 4])
-            byte_index += 4
-            md_output.write(f'- **Chunk CRC:** *h* `{crc}`\n')
+            md_output.write(f'- **Chunk CRC:** *h* `{hex_print(chunk['CRC'])}`\n')
 
         #attach image at bottom
-        md_output.write(f'## The PNG image:\n![the png image]({filepath})')
+        md_output.write(f'## The PNG image:\n![the png image]({imagepath})')
 
 
-#write_analysis('8x8.png')
-print(organize_bytes('8x8.png'))
+my_file_path = '8x8.png'
+write_analysis(my_file_path)
