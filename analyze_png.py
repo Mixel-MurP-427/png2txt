@@ -1,6 +1,3 @@
-#use `hex()` to convert to hexadecimal and `chr()` to convert to ascii
-#for the markdown, prefix the code sections with 'd', 'b', 'h', or 'a'
-
 file_header = b'\x89PNG\r\n\x1a\n'
 asciiLetterRange = set(range(65, 91)) | set(range(97, 123))
 
@@ -53,6 +50,20 @@ def organize_bytes(filepath):
     
     return chunks
 
+def organize_IHDR(IHDR_bytes):
+    if type(IHDR_bytes) != bytes:
+        raise TypeError(f'organize_IHDR() argument must be bytes, not "{type(IHDR_bytes)}".')
+    if len(IHDR_bytes) != 13:
+        raise ValueError(f'organize_IHDR() argument must be 13 bytes. Are you sure this is from an IHDR chunk?')
+    return {
+        'width': IHDR_bytes[:4],
+        'height': IHDR_bytes[4:8],
+        'depth': IHDR_bytes[8:9],
+        'color': IHDR_bytes[9:10],
+        'compression': IHDR_bytes[10:11],
+        'filter': IHDR_bytes[11:12],
+        'interlace': IHDR_bytes[12:],
+    }
 
 def write_analysis(imagepath):
 
@@ -76,7 +87,20 @@ def write_analysis(imagepath):
             
 
             #chunk data
-            md_output.write(f'- **Chunk data:**  \n*h* `{hex_print(chunk['data'])}`\n')
+            md_output.write(f'- **Chunk data:**')
+            if ascii_print(chunk['type']) == 'IHDR':
+                IHDR_data = organize_IHDR(chunk['data'])
+                #TODO include explanation of each value.
+                md_output.write(f'\n    - Image width: *h* `{hex_print(IHDR_data["width"])}` or {int.from_bytes(IHDR_data["width"])} pixels.\n' \
+                                  f'    - Image height: *h* `{hex_print(IHDR_data["height"])}` or {int.from_bytes(IHDR_data["height"])} pixels.\n' \
+                                  f'    - Bit depth: *h* `{hex_print(IHDR_data["depth"])}`\n' \
+                                  f'    - Color type: *h* `{hex_print(IHDR_data["color"])}`\n' \
+                                  f'    - Compression method: *h* `{hex_print(IHDR_data["compression"])}`\n' \
+                                  f'    - Filter method: *h* `{hex_print(IHDR_data["filter"])}`\n' \
+                                  f'    - Interlace method: *h* `{hex_print(IHDR_data["interlace"])}`\n'
+                                )
+            else:
+                md_output.write(f'  \n*h* `{hex_print(chunk['data'])}`\n')
 
             #chunk CRC checksum
             md_output.write(f'- **Chunk CRC:** *h* `{hex_print(chunk['CRC'])}`\n')

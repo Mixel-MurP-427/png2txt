@@ -4,8 +4,14 @@
 ### Chunk 1
 - **Chunk length:** *h* `0 0 0 d`, or 13 bytes.
 - **Chunk type:** *a* `IHDR`
-- **Chunk data:**  
-*h* `0 0 0 8 0 0 0 8 8 6 0 0 0`
+- **Chunk data:**
+    - Image width: *h* `0 0 0 8` or 8 pixels.
+    - Image height: *h* `0 0 0 8` or 8 pixels.
+    - Bit depth: *h* `8`
+    - Color type: *h* `6`
+    - Compression method: *h* `0`
+    - Filter method: *h* `0`
+    - Interlace method: *h* `0`
 - **Chunk CRC:** *h* `c4 f be 8b`
 ### Chunk 2
 - **Chunk length:** *h* `0 0 0 51`, or 81 bytes.
