@@ -3,10 +3,10 @@ asciiLetterRange = set(range(65, 91)) | set(range(97, 123))
 
 
 # We got some nice type conversions here :-)
-def hex_print(hpBytes):
+def hex_print(hpBytes): #TODO fix so that it doesn't remove leading zeros
     if type(hpBytes) != bytes:
         raise TypeError(f'hex_print() argument must be bytes, not "{type(hpBytes)}".')
-    return ' '.join(hex(byte)[2:] for byte in hpBytes)
+    return ' '.join(str(hex(byte)[2:]).zfill(2) for byte in hpBytes)
 
 def dec_print(dpBytes):
     if type(dpBytes) != bytes:
@@ -89,11 +89,12 @@ def write_analysis(imagepath):
             
 
             #chunk data
-            md_output.write(f'- **Chunk data:**')
+            md_output.write(f'- **Chunk data:**  \n*h* `{hex_print(chunk['data'])}`\n')
+
             if ascii_print(chunk['type']) == 'IHDR':
                 IHDR_data = organize_IHDR(chunk['data'])
                 #TODO include explanation of each value.
-                md_output.write(f'\n    - Image width: *h* `{hex_print(IHDR_data["width"])}` or {int.from_bytes(IHDR_data["width"])} pixels.\n' \
+                md_output.write(  f'    - Image width: *h* `{hex_print(IHDR_data["width"])}` or {int.from_bytes(IHDR_data["width"])} pixels.\n' \
                                   f'    - Image height: *h* `{hex_print(IHDR_data["height"])}` or {int.from_bytes(IHDR_data["height"])} pixels.\n' \
                                   f'    - Bit depth: *h* `{hex_print(IHDR_data["depth"])}`\n' \
                                   f'    - Color type: *h* `{hex_print(IHDR_data["color"])}`\n' \
@@ -101,8 +102,6 @@ def write_analysis(imagepath):
                                   f'    - Filter method: *h* `{hex_print(IHDR_data["filter"])}`\n' \
                                   f'    - Interlace method: *h* `{hex_print(IHDR_data["interlace"])}`\n'
                                 )
-            else:
-                md_output.write(f'  \n*h* `{hex_print(chunk['data'])}`\n')
 
             #chunk CRC checksum
             md_output.write(f'- **Chunk CRC:** *h* `{hex_print(chunk['CRC'])}`\n')
@@ -111,5 +110,5 @@ def write_analysis(imagepath):
         md_output.write(f'## The PNG image:\n![the png image]({imagepath})')
 
 
-my_file_path = '8x8.png'
+my_file_path = '1x1.png'
 write_analysis(my_file_path)
