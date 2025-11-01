@@ -1,3 +1,5 @@
+#this code is currently an identical copy of crc.py
+
 import zlib, struct
 
 def calcCrc4png(input_bytes: bytes) -> bytes: #accepts bytes of png type + data, returns 4 big-endian bytes

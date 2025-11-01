@@ -1,21 +1,17 @@
+#this file sorts the bytes inside a PNG file and writes a markdown outline of them
+
 file_header = b'\x89PNG\r\n\x1a\n'
 asciiLetterRange = set(range(65, 91)) | set(range(97, 123))
 
 
 # We got some nice type conversions here :-)
-def hex_print(hpBytes): #TODO fix so that it doesn't remove leading zeros
-    if type(hpBytes) != bytes:
-        raise TypeError(f'hex_print() argument must be bytes, not "{type(hpBytes)}".')
+def hex_print(hpBytes: bytes):
     return ' '.join(str(hex(byte)[2:]).zfill(2) for byte in hpBytes)
 
-def dec_print(dpBytes):
-    if type(dpBytes) != bytes:
-        raise TypeError(f'dec_print() argument must be bytes, not "{type(dpBytes)}".')
+def dec_print(dpBytes: bytes):
     return ' '.join(str(int(byte)) for byte in dpBytes)
 
-def ascii_print(apBytes):
-    if type(apBytes) != bytes:
-        raise TypeError(f'ascii_print() argument must be bytes, not "{type(apBytes)}".')
+def ascii_print(apBytes: bytes):
     output = []
     for byte in apBytes:
         if not byte in asciiLetterRange:

@@ -1,3 +1,4 @@
+### File size: 88 bytes
 ### PNG file signature
 - Decimal: `137 80 78 71 13 10 26 10`
 - Ascii/hex: `0x89 P N G 0xd 0xa 0x1a 0xa`
