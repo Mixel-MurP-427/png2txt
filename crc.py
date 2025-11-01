@@ -1,4 +1,4 @@
-import json, zlib, struct
+import zlib, struct
 
 def calcCrcZlib(type_bytes: bytes, data_bytes: bytes) -> bytes:
     """
@@ -23,40 +23,7 @@ def calcCrcZlib(type_bytes: bytes, data_bytes: bytes) -> bytes:
     # struct.pack('>I', ...) converts the unsigned integer to 4 big-endian bytes.
     return struct.pack('>I', crc_int)
 
-
-
-
-
-
-
-def makeCrcTable():
-    n = 0
-    k = 0
-    crcTable = [None] * 256
-    for n in range(256):
-        c = n
-        for k in range(8):
-            if(c & 1):
-                c = 0xedb88320 ^ (c >> 1)
-            else:
-                c = c >> 1
-        crcTable[n] = c
-    return crcTable
-
-def updateCrc(crcc, buff, leng, table):
-    assert table != None
-    c = 0
-    for n in range(leng):
-        c = table[(c^buff[n]) & 0xff] ^ (c >> 8)
-    return c
-def calcCrc(buff, leng, table):
-    return updateCrc(0xffffffff, buff, leng, table) ^ 0xffffffff
-
-table = makeCrcTable()
-with open('crc.json', 'w') as myFile:
-    json.dump(table, myFile, indent=2)
-
-print(calcCrcZlib(bytes(input("Chunk type: ")), bytes.fromhex(input("Hex string: ").strip())).hex())
+print(calcCrcZlib(bytes(input("Chunk type: ").encode('utf-8')), bytes.fromhex(input("Hex string: ").replace(" ", "").strip())).hex())
 # print(type(int("IDAT".encode('utf-8').hex(), 16)))
 # buffer = [int("IDAT".encode('utf-8').hex(), 16)] + [0x78, 0x01, 0x62, 0xfa, 0xcf, 0xc0, 0xf0, 0x1f, 0x0, 0x0, 0x0, 0xff, 0xff]
 # print(struct.pack('>I', calcCrc(buffer, len(buffer)-1, table)).hex())
