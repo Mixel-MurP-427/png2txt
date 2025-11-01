@@ -25,6 +25,7 @@ def ascii_print(apBytes):
 
 
 # Sorts the bytes inside a PNG file into chunks, and sorts chunks into length, type, data, and CRC sections.
+#returns the sorted bytes, plus the length of the file
 def organize_bytes(filepath):
     with open(filepath, 'rb') as myFile:
         file_bytes = myFile.read()
@@ -48,7 +49,7 @@ def organize_bytes(filepath):
         chunks[-1]['CRC'] = file_bytes[byte_index:byte_index+4]
         byte_index += 4
     
-    return chunks
+    return chunks, len(file_bytes)
 
 def organize_IHDR(IHDR_bytes):
     if type(IHDR_bytes) != bytes:
@@ -67,12 +68,13 @@ def organize_IHDR(IHDR_bytes):
 
 def write_analysis(imagepath):
 
-    chunks = organize_bytes(imagepath)
+    chunks, filesize = organize_bytes(imagepath)
 
     #begin writing to the markdown file
     with open('png_bytes_analysis.md', 'w') as md_output:
 
         #PNG file header
+        md_output.write(f'### File size: {filesize} bytes\n')
         md_output.write('### PNG file signature\n- Decimal: `137 80 78 71 13 10 26 10`\n- Ascii/hex: `0x89 P N G 0xd 0xa 0x1a 0xa`\n')
 
         #go through all chunks
